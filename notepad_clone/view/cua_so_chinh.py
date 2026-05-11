@@ -4,6 +4,7 @@ from tkinter import ttk
 from .notebook_tab import NotebookTab
 from .thanh_menu import ThanhMenu
 from .thanh_cong_cu import ThanhCongCu
+from .thanh_trang_thai import ThanhTrangThai
 from ..cau_hinh import TEN_UNG_DUNG, KICH_THUOC_MAC_DINH
 
 try:
@@ -12,15 +13,17 @@ try:
 except ImportError:
     HAS_SV_TTK = False
 
+
 class CuaSoChinh(tk.Tk):
     def __init__(self, callbacks):
         super().__init__()
         self.callbacks = callbacks
         self.title(TEN_UNG_DUNG)
         self.geometry(KICH_THUOC_MAC_DINH)
-        
+
         self._thiet_lap_theme()
         self._khoi_tao_ui()
+        self._bind_phim_tat()
 
     def _thiet_lap_theme(self):
         if HAS_SV_TTK:
@@ -34,17 +37,22 @@ class CuaSoChinh(tk.Tk):
         self.menu_bar = ThanhMenu(self, self.callbacks)
         self.config(menu=self.menu_bar)
 
-        # Toolbar
+        # Toolbar snippet
         self.toolbar = ThanhCongCu(self, self.callbacks.get("chen_text"))
         self.toolbar.pack(side="top", fill="x")
 
         # Notebook chính
         self.notebook = NotebookTab(self)
         self.notebook.pack(fill="both", expand=True, padx=2, pady=2)
-        
-        # Thanh trạng thái
-        self.status_bar = ttk.Label(self, text="Sẵn sàng", relief="sunken", anchor="w")
+
+        # Thanh trạng thái (dùng widget riêng)
+        self.status_bar = ThanhTrangThai(self)
         self.status_bar.pack(side="bottom", fill="x")
 
+    def _bind_phim_tat(self):
+        self.bind("<Control-n>", lambda e: self.callbacks.get("moi")())
+        self.bind("<Control-w>", lambda e: self.callbacks.get("dong")())
+
     def cap_nhat_trang_thai(self, text):
-        self.status_bar.config(text=text)
+        """Giữ tương thích ngược với controller hiện tại."""
+        self.status_bar.cap_nhat(text)
